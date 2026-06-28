@@ -12,7 +12,7 @@
     <!-- 앱 헤더 영역 -->
     <header class="app-header">
         <div class="header-logo">
-            <svg class="header-logo-icon text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <svg class="header-logo-icon" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
             </svg>
             <h1 class="logo-title">우리들의 배움터</h1>
@@ -24,7 +24,7 @@
         </div>
     </header>
 
-    <!-- 메인 3단 레이아웃 컨테이너 -->
+    <!-- 메인 2단 레이아웃 컨테이너 -->
     <main class="app-container">
         <!-- [1단] 키워드 사이드바 -->
         <section class="sidebar-keywords" aria-label="질문 키워드 필터">
@@ -44,80 +44,54 @@
             </div>
         </section>
 
-        <!-- [2단] 질문 게시판 피드 -->
-        <section class="main-feed" aria-label="질문 게시판 목록 및 작성">
-            <!-- 질문 등록 폼 카드 -->
-            <div class="card question-write-card">
-                <h3>모르는 내용 질문하기</h3>
-                <form id="question-form" class="question-form">
-                    <div class="form-group">
-                        <input type="text" id="question-title" placeholder="어떤 부분이 궁금한가요? 한 줄로 요약해 주세요." required maxlength="60" aria-label="질문 제목">
-                    </div>
-                    <div class="form-group">
-                        <textarea id="question-content" placeholder="이해하기 어려웠던 개념이나 문제를 자세히 적어주세요. 함께 고민해봐요!" required aria-label="질문 내용"></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group select-wrapper">
-                            <label for="question-keyword-select" class="sr-only">키워드 선택</label>
-                            <select id="question-keyword-select" required>
-                                <!-- Javascript에서 동적으로 키워드 목록을 받아 채워넣습니다. -->
-                            </select>
+        <!-- [2단] 질문 게시판 메인 영역 (목록/상세 토글) -->
+        <section class="main-content" aria-label="질문 게시판 메인">
+            
+            <!-- 2-A: 질문 목록 뷰 -->
+            <div id="feed-view" class="view-panel">
+                <!-- 질문 등록 폼 카드 -->
+                <div class="card question-write-card">
+                    <h3>모르는 내용 질문하기</h3>
+                    <form id="question-form" class="question-form">
+                        <div class="form-group">
+                            <input type="text" id="question-title" placeholder="어떤 부분이 궁금한가요? 한 줄로 요약해 주세요." required maxlength="60" aria-label="질문 제목">
                         </div>
-                        <button type="submit" class="btn-primary">질문 등록하기</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 질문 피드 헤더 및 검색 -->
-            <div class="feed-header">
-                <div class="feed-title-area">
-                    <h3 id="current-filter-title">전체 질문 목록</h3>
-                    <span id="question-count-badge" class="count-badge">0</span>
+                        <div class="form-group">
+                            <textarea id="question-content" placeholder="이해하기 어려웠던 개념이나 문제를 자세히 적어주세요. 함께 고민해봐요!" required aria-label="질문 내용"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group select-wrapper">
+                                <label for="question-keyword-select" class="sr-only">키워드 선택</label>
+                                <select id="question-keyword-select" required>
+                                    <!-- Javascript에서 동적으로 키워드 목록을 받아 채워넣습니다. -->
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-primary">질문 등록하기</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="search-box">
-                    <input type="text" id="search-input" placeholder="질문 검색..." aria-label="질문 검색">
+
+                <!-- 질문 피드 헤더 및 검색 -->
+                <div class="feed-header">
+                    <div class="feed-title-area">
+                        <h3 id="current-filter-title">전체 질문 목록</h3>
+                        <span id="question-count-badge" class="count-badge">0</span>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="질문 검색..." aria-label="질문 검색">
+                    </div>
                 </div>
-            </div>
 
-            <!-- 질문 카드 목록 컨테이너 -->
-            <div id="question-cards-container" class="question-cards-container">
-                <!-- Javascript에서 질문 카드들을 렌더링합니다. -->
-            </div>
-        </section>
-
-        <!-- [3단] 공지사항 및 상세 답변 스레드 -->
-        <section class="sidebar-details" aria-label="공지사항 및 답변 스레드">
-            <!-- 3단 - A: 공지사항 뷰 (기본값) -->
-            <div id="notice-view" class="details-panel notice-panel">
-                <div class="panel-header">
-                    <h2>알림판 & 공부 팁</h2>
-                </div>
-                <div class="panel-body">
-                    <div class="notice-card notice-highlight">
-                        <span class="notice-badge">공지</span>
-                        <h4>모르는 것은 부끄러운 게 아닙니다!</h4>
-                        <p>작은 질문이라도 괜찮아요. 공부하다 막히는 부분이 생기면 주저하지 말고 질문을 등록해 주세요. 서로 가르쳐주며 더 크게 배울 수 있습니다.</p>
-                    </div>
-                    
-                    <div class="notice-card">
-                        <span class="notice-badge tips">공부 팁</span>
-                        <h4>좋은 질문을 하는 방법</h4>
-                        <p>1. 내가 어디까지 이해했는지 설명해 주세요.<br>
-                           2. 헷갈리는 공식이나 개념을 같이 적어주면 더 구체적인 답변을 얻을 수 있어요!</p>
-                    </div>
-
-                    <div class="notice-card">
-                        <span class="notice-badge event">이벤트</span>
-                        <h4>이달의 답변 왕을 찾습니다</h4>
-                        <p>친구들의 질문에 가장 친절하고 상세하게 답변을 달아준 학생 3명에게 맛있는 매점 간식 쿠폰을 드립니다! 활발한 참여 부탁해요!</p>
-                    </div>
+                <!-- 질문 카드 목록 컨테이너 -->
+                <div id="question-cards-container" class="question-cards-container">
+                    <!-- Javascript에서 질문 카드들을 렌더링합니다. -->
                 </div>
             </div>
 
-            <!-- 3단 - B: 질문 상세 및 답변 스레드 뷰 (질문 클릭 시 전환됨) -->
-            <div id="thread-view" class="details-panel thread-panel hidden">
+            <!-- 2-B: 질문 상세 및 답변 스레드 뷰 (질문 클릭 시 전환됨) -->
+            <div id="thread-view" class="view-panel hidden">
                 <div class="thread-header">
-                    <button type="button" id="back-to-notice-btn" class="btn-text-back">← 공지사항으로 돌아가기</button>
+                    <button type="button" id="back-to-feed-btn" class="btn-text-back">← 질문 목록으로 돌아가기</button>
                 </div>
                 
                 <div class="thread-body">
@@ -154,6 +128,7 @@
                     </form>
                 </div>
             </div>
+
         </section>
     </main>
 

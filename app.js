@@ -71,7 +71,7 @@ const state = {
     questions: [],          // 전체 질문 목록
     selectedKeyword: '전체', // 현재 왼쪽 1단에서 선택된 키워드 필터
     searchQuery: '',        // 현재 검색 창에 입력된 검색어
-    activeQuestionId: null  // 현재 3단 스레드 창에 띄워진 질문의 ID
+    activeQuestionId: null  // 현재 우측 메인 영역에 띄워진 질문의 ID (null이면 목록 표시)
 };
 
 // ==========================================================================
@@ -170,8 +170,26 @@ function renderKeywords() {
     selectEl.innerHTML = selectHtml;
 }
 
-// [2단] 질문 카드 피드 렌더링
-function renderQuestions() {
+// [2단] 메인 영역 토글 렌더러 (목록 창과 상세 창 전환)
+function renderMainArea() {
+    const feedView = document.getElementById('feed-view');
+    const threadView = document.getElementById('thread-view');
+
+    if (!state.activeQuestionId) {
+        // 활성화된 질문이 없을 때 -> 질문 목록(피드) 보여주기
+        feedView.classList.remove('hidden');
+        threadView.classList.add('hidden');
+        renderQuestionsFeed(); // 피드 내용 갱신
+    } else {
+        // 활성화된 질문이 있을 때 -> 상세 답변 스레드 보여주기
+        feedView.classList.add('hidden');
+        threadView.classList.remove('hidden');
+        renderThreadDetail(); // 상세 내용 갱신
+    }
+}
+
+// 피드(질문 목록) 내부 그리기
+function renderQuestionsFeed() {
     const container = document.getElementById('question-cards-container');
     const countBadge = document.getElementById('question-count-badge');
     const filterTitle = document.getElementById('current-filter-title');
@@ -206,7 +224,7 @@ function renderQuestions() {
     // 목록이 비었을 때 안내 메시지
     if (filtered.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: var(--color-text-sub); background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <div style="text-align: center; padding: 40px; color: var(--color-text-sub); background: var(--color-bg-card); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
                 <p style="font-size: 0.9rem;">등록된 질문이 없어요. 첫 번째 질문을 남겨보세요!</p>
             </div>
         `;
@@ -216,11 +234,10 @@ function renderQuestions() {
     // 질문 카드 그리기
     let html = '';
     filtered.forEach(q => {
-        const isSelected = state.activeQuestionId === q.id;
         const commentCount = q.comments ? q.comments.length : 0;
         
         html += `
-            <div class="question-card ${isSelected ? 'active' : ''}" onclick="selectQuestion('${q.id}')" data-id="${q.id}">
+            <div class="question-card" onclick="selectQuestion('${q.id}')" data-id="${q.id}">
                 <div class="question-card-meta">
                     <span class="tag-badge">${escapeHtml(q.keyword)}</span>
                     <span class="author">${escapeHtml(q.userName)}</span>
@@ -240,32 +257,15 @@ function renderQuestions() {
     container.innerHTML = html;
 }
 
-// [3단] 공지사항 및 상세/답변 스레드 렌더링
-function renderRightPanel() {
-    const noticeView = document.getElementById('notice-view');
-    const threadView = document.getElementById('thread-view');
-    const sidebarDetails = document.querySelector('.sidebar-details');
-
-    if (!state.activeQuestionId) {
-        // 활성화된 질문이 없을 때 -> 공지사항 보여주기
-        noticeView.classList.remove('hidden');
-        threadView.classList.add('hidden');
-        sidebarDetails.classList.remove('active'); // 모바일 화면에서 숨김 해제
-        return;
-    }
-
-    // 활성화된 질문 데이터 찾기
+// 스레드(상세 질문 및 댓글) 내부 그리기
+function renderThreadDetail() {
     const question = state.questions.find(q => q.id === state.activeQuestionId);
     if (!question) {
+        // 찾을 수 없는 경우 강제로 목록으로 되돌림
         state.activeQuestionId = null;
-        renderRightPanel();
+        renderMainArea();
         return;
     }
-
-    // 3단 스레드 내용 렌더링
-    noticeView.classList.add('hidden');
-    threadView.classList.remove('hidden');
-    sidebarDetails.classList.add('active'); // 모바일 화면에서 활성화 슬라이드
 
     // 질문 상세 내용 주입
     document.getElementById('detail-keyword').textContent = question.keyword;
@@ -314,18 +314,24 @@ function renderRightPanel() {
 window.selectKeyword = function(keyword) {
     state.selectedKeyword = keyword;
     state.searchQuery = ''; // 키워드 변경 시 검색어는 비워줍니다.
+    state.activeQuestionId = null; // 상세 창에 있었다면 목록으로 강제 복귀
     document.getElementById('search-input').value = '';
     
     renderKeywords();
-    renderQuestions();
+    renderMainArea();
 };
 
-// 질문 선택 시 3단 상세 스레드 호출
+// 질문 선택 시 상세 스레드 호출
 window.selectQuestion = function(questionId) {
     state.activeQuestionId = questionId;
-    renderQuestions(); // 질문 카드 활성화 하이라이트를 위해 2단도 리렌더링
-    renderRightPanel();
+    renderMainArea(); // 피드를 숨기고 스레드 뷰를 활성화
 };
+
+// 뒤로 가기 처리
+function handleBackToFeed() {
+    state.activeQuestionId = null;
+    renderMainArea(); // 스레드 뷰를 숨기고 피드를 활성화
+}
 
 // 키워드 추가 처리
 function handleAddKeyword() {
@@ -385,17 +391,16 @@ function handleAddQuestion(e) {
     state.questions.push(newQuestion);
     saveDataToStorage();
 
-    // UI 리렌더링
-    renderKeywords();
-    renderQuestions();
-    
-    // 방금 등록한 질문 바로 상세 보기로 전환
-    selectQuestion(newQuestion.id);
-
-    // 폼 입력란 초기화
+    // 입력란 초기화
     titleInput.value = '';
     contentInput.value = '';
     keywordSelect.value = '';
+
+    // 키워드 버튼 숫자 갱신을 위한 렌더링
+    renderKeywords();
+    
+    // 방금 등록한 질문 바로 상세 보기로 전환
+    selectQuestion(newQuestion.id);
 }
 
 // 답변(댓글) 등록 처리
@@ -422,7 +427,7 @@ function handleAddComment(e) {
     // 새 답변 객체 생성
     const newComment = {
         id: 'c_' + Date.now(),
-        userId: state.currentUser.id, // 테스트 유저 user_01
+        userId: state.currentUser.id,
         userName: `학생 ${state.currentUser.name}`,
         content: content,
         createdAt: new Date().toISOString()
@@ -431,10 +436,9 @@ function handleAddComment(e) {
     state.questions[questionIndex].comments.push(newComment);
     saveDataToStorage();
 
-    // 입력란 비우기 및 UI 갱신
+    // 입력란 비우기 및 스레드 창만 다시 갱신
     textarea.value = '';
-    renderRightPanel();
-    renderQuestions(); // 답변 개수 갱신을 위해 2단도 다시 그림
+    renderThreadDetail();
 }
 
 // ==========================================================================
@@ -446,8 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 7-2. UI 최초 렌더링
     renderKeywords();
-    renderQuestions();
-    renderRightPanel();
+    renderMainArea();
 
     // 7-3. 이벤트 리스너(동작 감지기) 연결
 
@@ -465,15 +468,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // 실시간 검색창 입력 이벤트
     document.getElementById('search-input').addEventListener('input', (e) => {
         state.searchQuery = e.target.value;
-        renderQuestions();
+        // 검색어 입력 시 상세창에 있었다면 강제로 목록으로 되돌림
+        if(state.activeQuestionId !== null) {
+            state.activeQuestionId = null;
+            renderMainArea();
+        } else {
+            renderQuestionsFeed();
+        }
     });
 
-    // 3단 상세 스레드에서 '공지사항으로 돌아가기' 클릭 이벤트
-    document.getElementById('back-to-notice-btn').addEventListener('click', () => {
-        state.activeQuestionId = null;
-        renderQuestions(); // 질문 카드의 active 테두리 제거를 위해 갱신
-        renderRightPanel();
-    });
+    // 상세 스레드에서 '질문 목록으로 돌아가기' 클릭 이벤트
+    document.getElementById('back-to-feed-btn').addEventListener('click', handleBackToFeed);
 
     // 답변 등록 폼 제출 이벤트
     document.getElementById('comment-form').addEventListener('submit', handleAddComment);
