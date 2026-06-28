@@ -1,55 +1,34 @@
 /* ==========================================================================
    🎒 우리들의 배움터 - Q&A 게시판 스타일시트
-   이 스타일시트는 따뜻하고 친근한 학교 분위기를 위해 파스텔톤을 바탕으로 합니다.
    ========================================================================== */
 
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 
-/* 1. 디자인 시스템 토큰 정의 (CSS 변수) */
 :root {
-    /* 블루톤 메인 컬러 팔레트 */
-    --color-bg-main: #EFF6FF;         /* 전체 배경 (연한 파스텔 블루) */
-    --color-bg-card: #FFFFFF;         /* 카드 배경 (순백색) */
-    --color-border: #DBEAFE;          /* 경계선 및 디바이더 컬러 (블루 100) */
-    
-    /* 텍스트 컬러 */
-    --color-text-main: #3D3A36;       /* 주 텍스트 (눈이 편안한 소프트 블랙) */
-    --color-text-sub: #7A756E;        /* 보조 텍스트 (회갈색) */
-    --color-text-muted: #A39E97;      /* 비활성 또는 매우 흐린 텍스트 */
-
-    /* 포인트 컬러 (과목 및 강조에 사용) - Blue 중심 */
-    --color-primary: #3B82F6;         /* 포인트 블루 (브랜드 메인) */
-    --color-primary-hover: #2563EB;   /* 블루 호버 */
-    --color-primary-light: #EFF6FF;   /* 블루 연한 배경 */
-    
-    --color-mint: #88D49E;            /* 과학/성공 등 민트 그린 */
-    --color-mint-light: #EBF8EE;
-    
-    --color-blue: #60A5FA;            /* 수학/정보 등 파스텔 블루 보조 */
+    --color-bg-main: #EFF6FF;         
+    --color-bg-card: #FFFFFF;         
+    --color-border: #DBEAFE;          
+    --color-text-main: #3D3A36;       
+    --color-text-sub: #7A756E;        
+    --color-text-muted: #A39E97;      
+    --color-primary: #3B82F6;         
+    --color-primary-hover: #2563EB;   
+    --color-primary-light: #EFF6FF;   
+    --color-mint: #88D49E;            
     --color-blue-light: #EFF6FF;
-
-    --color-pink: #F5A7B8;            /* 국어/미술 등 파스텔 핑크 */
-    --color-pink-light: #FFF0F3;
     
-    --color-yellow: #F6D55C;          /* 공지사항 강조 바닐라 옐로우 */
-    --color-yellow-light: #FFFBEB;
-
-    /* 그림자 효과 */
     --shadow-sm: 0 2px 8px rgba(180, 175, 165, 0.08);
     --shadow-md: 0 4px 16px rgba(180, 175, 165, 0.12);
-    --shadow-hover: 0 8px 24px rgba(59, 130, 246, 0.15); /* 블루톤 호버 섀도우 */
+    --shadow-lg: 0 8px 30px rgba(59, 130, 246, 0.2);
 
-    /* 모서리 둥글기 값 */
     --radius-sm: 8px;
     --radius-md: 14px;
     --radius-lg: 20px;
 
-    /* 전이 효과 속도 */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
 }
 
-/* 2. 전역 스타일 초기화 */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -57,53 +36,146 @@
 }
 
 body {
-    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    font-family: 'Pretendard Variable', Pretendard, sans-serif;
     background-color: var(--color-bg-main);
     color: var(--color-text-main);
     line-height: 1.6;
     height: 100vh;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   [새 기능] 로그인 화면 오버레이 스타일
+   ========================================================================== */
+.login-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--color-bg-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity var(--transition-normal);
+}
+
+.login-card {
+    background-color: var(--color-bg-card);
+    width: 400px;
+    padding: 40px 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* 전체 페이지 스크롤 방지, 내부 스크롤 이용 */
+    gap: 20px;
+    text-align: center;
 }
 
-/* 스크롤바 디자인 커스텀 (둥글고 귀여운 스타일) */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
-    border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-text-muted);
-}
-
-/* 스크린 리더용 숨김 스타일 (웹 접근성 확보) */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    border: 0;
-}
-
-/* 텍스트 유틸리티 */
-.text-primary {
+.login-header h2 {
     color: var(--color-primary);
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
 }
-.text-muted {
-    color: var(--color-text-muted);
+.login-header p {
+    color: var(--color-text-sub);
+    font-size: 0.95rem;
 }
 
-/* 3. 공통 컴포넌트 & 버튼 스타일 */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+.auth-form input:focus { border-color: var(--color-primary); }
+
+.auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-secondary {
+    background-color: var(--color-bg-card);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+.btn-secondary:hover {
+    background-color: var(--color-primary-light);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin: 10px 0;
+}
+.auth-divider::before, .auth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid var(--color-border);
+}
+.auth-divider span { padding: 0 10px; }
+
+.btn-google {
+    background-color: #ffffff;
+    color: #3C4043;
+    border: 1px solid #DADCE0;
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color var(--transition-fast);
+}
+.btn-google:hover { background-color: #F8F9FA; box-shadow: var(--shadow-sm); }
+
+/* ==========================================================================
+   메인 앱 래퍼
+   ========================================================================== */
+#main-app-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   앱 기존 컴포넌트 스타일 (유지)
+   ========================================================================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--color-border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--color-text-muted); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+
 .card {
     background-color: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -112,615 +184,106 @@ body {
     padding: 20px;
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.btn-primary { background-color: var(--color-primary); color: white; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background-color var(--transition-fast), transform var(--transition-fast); }
+.btn-primary:hover { background-color: var(--color-primary-hover); }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-primary-sm { background-color: var(--color-primary); color: white; border: none; border-radius: var(--radius-sm); padding: 8px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background-color var(--transition-fast); }
+.btn-primary-sm:hover { background-color: var(--color-primary-hover); }
+
+.btn-logout-sm { background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; margin-left: 8px; transition: background-color var(--transition-fast); }
+.btn-logout-sm:hover { background-color: rgba(255,255,255,0.4); }
+
+.btn-text-back { background: none; border: none; color: var(--color-primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; padding: 4px 8px; border-radius: var(--radius-sm); transition: background-color var(--transition-fast); }
+.btn-text-back:hover { background-color: var(--color-primary-light); }
+
+.count-badge { background-color: var(--color-primary-light); color: var(--color-primary); font-weight: 700; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem; margin-left: 6px; }
+.tag-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background-color: var(--color-blue-light); color: var(--color-primary); }
+
+.app-header { background-color: var(--color-primary); color: white; border-bottom: 1px solid var(--color-primary-hover); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); z-index: 10; }
+.header-logo { display: flex; align-items: center; gap: 8px; }
+.header-logo-icon { width: 28px; height: 28px; color: white; }
+.logo-title { font-size: 1.3rem; font-weight: 700; color: white; letter-spacing: -0.5px; }
+.logo-badge { background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.4); font-size: 0.7rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+
+.user-profile-badge { display: flex; align-items: center; gap: 8px; background-color: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 6px 12px; border-radius: 30px; font-size: 0.85rem; }
+.user-status-dot { width: 8px; height: 8px; background-color: var(--color-mint); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--color-mint); }
+
+.app-container { display: grid; grid-template-columns: 240px 1fr; flex: 1; overflow: hidden; }
+.section-title-wrapper { margin-bottom: 18px; padding-bottom: 8px; border-bottom: 2px solid var(--color-border); }
+.section-title-wrapper h2 { font-size: 1rem; font-weight: 700; color: var(--color-text-main); }
+
+.sidebar-keywords { background-color: transparent; border-right: 1px solid var(--color-border); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+.keywords-list-container { flex: 1; }
+.keywords-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.keywords-list li button { width: 100%; text-align: left; background: none; border: none; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; color: var(--color-text-sub); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all var(--transition-fast); }
+.keywords-list li button:hover { background-color: var(--color-bg-card); color: var(--color-primary); }
+.keywords-list li.active button { background-color: var(--color-primary-light); color: var(--color-primary); font-weight: 700; }
+.keywords-list li button .kw-count { font-size: 0.75rem; background-color: rgba(0, 0, 0, 0.04); padding: 2px 6px; border-radius: 10px; color: var(--color-text-sub); }
+.keywords-list li.active button .kw-count { background-color: var(--color-primary); color: white; }
+
+.add-keyword-form { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--color-border); display: flex; gap: 6px; }
+.add-keyword-form input { flex: 1; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.85rem; outline: none; background-color: var(--color-bg-card); transition: border-color var(--transition-fast); }
+.add-keyword-form input:focus { border-color: var(--color-primary); }
+
+.main-content { display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.view-panel { display: flex; flex-direction: column; width: 100%; height: 100%; position: absolute; top: 0; left: 0; transition: opacity var(--transition-normal); }
+.view-panel.hidden { opacity: 0; pointer-events: none; z-index: -1; }
+
+#feed-view { padding: 24px; overflow-y: auto; gap: 20px; }
+.question-write-card h3 { font-size: 1rem; margin-bottom: 12px; color: var(--color-text-main); }
+.question-form { display: flex; flex-direction: column; gap: 10px; }
+.question-form input[type="text"], .question-form textarea, .question-form select { width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.9rem; outline: none; font-family: inherit; transition: border-color var(--transition-fast); }
+.question-form textarea { min-height: 100px; resize: vertical; }
+.question-form input[type="text"]:focus, .question-form textarea:focus, .question-form select:focus { border-color: var(--color-primary); }
+.question-form .form-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.question-form .select-wrapper { flex: 1; max-width: 180px; }
+.question-form select { background-color: white; cursor: pointer; }
+
+.feed-header { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.feed-title-area { display: flex; align-items: center; }
+.feed-title-area h3 { font-size: 1.1rem; font-weight: 700; }
+.search-box input { padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 30px; font-size: 0.85rem; outline: none; background-color: white; width: 200px; transition: all var(--transition-fast); }
+.search-box input:focus { width: 250px; border-color: var(--color-primary); box-shadow: var(--shadow-sm); }
+
+.question-cards-container { display: flex; flex-direction: column; gap: 14px; }
+.question-card { cursor: pointer; border: 1px solid var(--color-border); border-radius: var(--radius-md); background-color: var(--color-bg-card); padding: 18px; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast); position: relative; display: flex; flex-direction: column; gap: 8px; }
+.question-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-primary); }
+.question-card-meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--color-text-sub); }
+.question-card-meta .author { font-weight: 600; color: var(--color-text-main); }
+.question-card-title { font-size: 0.95rem; font-weight: 700; color: var(--color-text-main); line-height: 1.4; }
+.question-card-preview { font-size: 0.85rem; color: var(--color-text-sub); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.question-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 8px; border-top: 1px dotted var(--color-border); }
+.comment-count-indicator { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--color-primary); font-weight: 600; }
+
+#thread-view { background-color: var(--color-bg-main); display: flex; flex-direction: column; }
+.thread-header { padding: 15px 24px; border-bottom: 1px solid var(--color-border); background-color: transparent; }
+.thread-body { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.thread-question-detail { background-color: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-sm); }
+.thread-question-meta { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--color-text-sub); }
+.thread-question-meta .author-name { font-weight: 600; color: var(--color-text-main); }
+.detail-title { font-size: 1.15rem; font-weight: 700; color: var(--color-text-main); line-height: 1.4; }
+.detail-content { font-size: 0.95rem; color: var(--color-text-main); white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+
+.thread-comments-section h4 { font-size: 1rem; margin-bottom: 12px; }
+.comments-container { display: flex; flex-direction: column; gap: 10px; }
+.comment-card { background-color: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast); }
+.comment-card:hover { transform: translateX(2px); }
+.comment-card-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-sub); }
+.comment-card-meta .comment-author { font-weight: 600; color: var(--color-text-main); }
+.comment-card-content { font-size: 0.9rem; color: var(--color-text-main); white-space: pre-wrap; line-height: 1.5; }
+
+.thread-comment-input-area { padding: 16px 24px; border-top: 1px solid var(--color-border); background-color: transparent; }
+.comment-form { display: flex; flex-direction: column; gap: 8px; }
+.comment-form textarea { width: 100%; min-height: 80px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 12px; font-size: 0.9rem; font-family: inherit; resize: none; outline: none; transition: border-color var(--transition-fast); }
+.comment-form textarea:focus { border-color: var(--color-primary); }
+.comment-form-actions { display: flex; justify-content: space-between; align-items: center; }
+.user-indicator { font-size: 0.8rem; color: var(--color-text-sub); }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* 일반 버튼 */
-.btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 10px 18px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color var(--transition-fast), transform var(--transition-fast);
-}
-.btn-primary:hover {
-    background-color: var(--color-primary-hover);
-}
-.btn-primary:active {
-    transform: scale(0.97);
-}
-
-/* 작은 크기 버튼 */
-.btn-primary-sm {
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 8px 14px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
-}
-.btn-primary-sm:hover {
-    background-color: var(--color-primary-hover);
-}
-
-/* 텍스트 링크형 버튼 */
-.btn-text-back {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: var(--radius-sm);
-    transition: background-color var(--transition-fast);
-}
-.btn-text-back:hover {
-    background-color: var(--color-primary-light);
-}
-
-/* 뱃지 스타일 */
-.count-badge {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary);
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    margin-left: 6px;
-}
-
-.tag-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background-color: var(--color-blue-light);
-    color: var(--color-primary);
-}
-
-/* 4. 앱 헤더 영역 스타일 */
-.app-header {
-    background-color: var(--color-primary);
-    color: white;
-    border-bottom: 1px solid var(--color-primary-hover);
-    padding: 12px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-    z-index: 10;
-}
-
-.header-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.header-logo-icon {
-    width: 28px;
-    height: 28px;
-    color: white;
-}
-
-.logo-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.5px;
-}
-
-.logo-badge {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 4px;
-}
-
-.user-profile-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 30px;
-    font-size: 0.85rem;
-}
-
-.user-status-dot {
-    width: 8px;
-    height: 8px;
-    background-color: var(--color-mint);
-    border-radius: 50%;
-    display: inline-block;
-    box-shadow: 0 0 8px var(--color-mint);
-}
-
-/* 5. 메인 레이아웃 및 2단 구성 */
-.app-container {
-    display: grid;
-    grid-template-columns: 240px 1fr; /* 1단(키워드) : 2단(메인 콘텐츠) */
-    flex: 1;
-    overflow: hidden;
-}
-
-/* 세션 타이틀 스타일 */
-.section-title-wrapper {
-    margin-bottom: 18px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--color-border);
-}
-
-.section-title-wrapper h2 {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-text-main);
-}
-
-/* 5-1. [1단] 키워드 사이드바 */
-.sidebar-keywords {
-    background-color: transparent;
-    border-right: 1px solid var(--color-border);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-
-.keywords-list-container {
-    flex: 1;
-}
-
-.keywords-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.keywords-list li button {
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    padding: 10px 14px;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--color-text-sub);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all var(--transition-fast);
-}
-
-.keywords-list li button:hover {
-    background-color: var(--color-bg-card); /* hover 시 카드 배경처럼 하얗게 */
-    color: var(--color-primary);
-}
-
-.keywords-list li.active button {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary);
-    font-weight: 700;
-}
-
-.keywords-list li button .kw-count {
-    font-size: 0.75rem;
-    background-color: rgba(0, 0, 0, 0.04);
-    padding: 2px 6px;
-    border-radius: 10px;
-    color: var(--color-text-sub);
-}
-
-.keywords-list li.active button .kw-count {
-    background-color: var(--color-primary);
-    color: white;
-}
-
-/* 새 키워드 추가 폼 */
-.add-keyword-form {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    gap: 6px;
-}
-
-.add-keyword-form input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-    outline: none;
-    background-color: var(--color-bg-card);
-    transition: border-color var(--transition-fast);
-}
-
-.add-keyword-form input:focus {
-    border-color: var(--color-primary);
-}
-
-/* 5-2. [2단] 우측 메인 콘텐츠 공통 */
-.main-content {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-}
-
-.view-panel {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transition: opacity var(--transition-normal);
-}
-
-.hidden {
-    opacity: 0;
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* 2-A: 피드 뷰(목록) 영역 */
-#feed-view {
-    padding: 24px;
-    overflow-y: auto;
-    gap: 20px;
-}
-
-/* 질문 작성 카드 */
-.question-write-card h3 {
-    font-size: 1rem;
-    margin-bottom: 12px;
-    color: var(--color-text-main);
-}
-
-.question-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.question-form input[type="text"],
-.question-form textarea,
-.question-form select {
-    width: 100%;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    font-size: 0.9rem;
-    outline: none;
-    font-family: inherit;
-    transition: border-color var(--transition-fast);
-}
-
-.question-form textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-.question-form input[type="text"]:focus,
-.question-form textarea:focus,
-.question-form select:focus {
-    border-color: var(--color-primary);
-}
-
-.question-form .form-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.question-form .select-wrapper {
-    flex: 1;
-    max-width: 180px;
-}
-
-.question-form select {
-    background-color: white;
-    cursor: pointer;
-}
-
-/* 피드 헤더 및 검색 */
-.feed-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-}
-
-.feed-title-area {
-    display: flex;
-    align-items: center;
-}
-
-.feed-title-area h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-
-.search-box input {
-    padding: 8px 14px;
-    border: 1px solid var(--color-border);
-    border-radius: 30px;
-    font-size: 0.85rem;
-    outline: none;
-    background-color: white;
-    width: 200px;
-    transition: all var(--transition-fast);
-}
-
-.search-box input:focus {
-    width: 250px;
-    border-color: var(--color-primary);
-    box-shadow: var(--shadow-sm);
-}
-
-/* 질문 카드 목록 */
-.question-cards-container {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-/* 질문 카드 스타일 */
-.question-card {
-    cursor: pointer;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background-color: var(--color-bg-card);
-    padding: 18px;
-    box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.question-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-primary);
-}
-
-.question-card.active {
-    border-color: var(--color-primary);
-    background-color: var(--color-primary-light);
-}
-
-.question-card-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem;
-    color: var(--color-text-sub);
-}
-
-.question-card-meta .author {
-    font-weight: 600;
-    color: var(--color-text-main);
-}
-
-.question-card-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--color-text-main);
-    line-height: 1.4;
-}
-
-.question-card-preview {
-    font-size: 0.85rem;
-    color: var(--color-text-sub);
-    word-break: break-all;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* 두 줄만 요약해서 보여줌 */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.question-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 6px;
-    padding-top: 8px;
-    border-top: 1px dotted var(--color-border);
-}
-
-.comment-count-indicator {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.75rem;
-    color: var(--color-primary);
-    font-weight: 600;
-}
-
-/* 2-B: 질문 상세(스레드) 뷰 영역 */
-#thread-view {
-    background-color: var(--color-bg-main);
-    display: flex;
-    flex-direction: column;
-}
-
-.thread-header {
-    padding: 15px 24px;
-    border-bottom: 1px solid var(--color-border);
-    background-color: transparent;
-}
-
-.thread-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* 상세 질문 내용 */
-.thread-question-detail {
-    background-color: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: var(--shadow-sm);
-}
-
-.thread-question-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: var(--color-text-sub);
-}
-
-.thread-question-meta .author-name {
-    font-weight: 600;
-    color: var(--color-text-main);
-}
-
-.detail-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--color-text-main);
-    line-height: 1.4;
-}
-
-.detail-content {
-    font-size: 0.95rem;
-    color: var(--color-text-main);
-    white-space: pre-wrap; /* 줄바꿈 유지 */
-    word-break: break-all;
-    line-height: 1.6;
-}
-
-/* 답변(댓글) 스레드 영역 */
-.thread-comments-section h4 {
-    font-size: 1rem;
-    margin-bottom: 12px;
-}
-
-.comments-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* 답변 카드 */
-.comment-card {
-    background-color: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-fast);
-}
-
-.comment-card:hover {
-    transform: translateX(2px);
-}
-
-.comment-card-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
-    color: var(--color-text-sub);
-}
-
-.comment-card-meta .comment-author {
-    font-weight: 600;
-    color: var(--color-text-main);
-}
-
-.comment-card-content {
-    font-size: 0.9rem;
-    color: var(--color-text-main);
-    white-space: pre-wrap;
-    line-height: 1.5;
-}
-
-/* 답변 작성창 영역 (하단 고정) */
-.thread-comment-input-area {
-    padding: 16px 24px;
-    border-top: 1px solid var(--color-border);
-    background-color: transparent;
-}
-
-.comment-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.comment-form textarea {
-    width: 100%;
-    min-height: 80px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 12px;
-    font-size: 0.9rem;
-    font-family: inherit;
-    resize: none;
-    outline: none;
-    transition: border-color var(--transition-fast);
-}
-
-.comment-form textarea:focus {
-    border-color: var(--color-primary);
-}
-
-.comment-form-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.user-indicator {
-    font-size: 0.8rem;
-    color: var(--color-text-sub);
-}
-
-/* 6. 반응형 디자인 */
 @media (max-width: 768px) {
-    .app-container {
-        grid-template-columns: 1fr; /* 모바일에서는 1단으로 압축 */
-    }
-    .sidebar-keywords {
-        display: none; /* 키워드 목록은 모바일에서 숨김 처리 */
-    }
+    .app-container { grid-template-columns: 1fr; }
+    .sidebar-keywords { display: none; }
+    .login-card { width: 90%; }
 }

@@ -1,5 +1,5 @@
 /**
- * 🎒 우리들의 배움터 - Q&A 게시판 앱 핵심 스크립트 (Firebase 연동 버전)
+ * 🎒 우리들의 배움터 - Q&A 게시판 앱 핵심 스크립트 (Firebase 로그인 연동)
  */
 
 // ==========================================================================
@@ -7,13 +7,17 @@
 // ==========================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
-    getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, arrayUnion, setDoc, getDoc 
+    getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, arrayUnion, setDoc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// [새로 추가] 인증 관련 라이브러리 모음
+import { 
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // ==========================================================================
-// 2. Firebase 설정 정보 (사용자가 직접 입력해야 하는 영역)
+// 2. Firebase 설정 정보
 // ==========================================================================
-// [중요] 아래 빈칸들에 발급받으신 Firebase 설정 키 정보들을 따옴표 안에 채워 넣어주세요!
 const firebaseConfig = {
   apiKey: "AIzaSyBaBFpc8KafjW2YZuZVJbAD52O0XjdoUNU",
   authDomain: "test-72f32.firebaseapp.com",
@@ -27,18 +31,21 @@ const firebaseConfig = {
 // 3. 앱 상태 관리 (State)
 // ==========================================================================
 const state = {
-    currentUser: { id: 'user_01', name: 'user_01' }, // 현재 테스트 로그인 유저
-    keywords: [],           // 전체 키워드 목록
-    questions: [],          // 전체 질문 목록
-    selectedKeyword: '전체', // 현재 필터링된 키워드
-    searchQuery: '',        // 현재 검색어
-    activeQuestionId: null  // 현재 띄워진 질문의 ID (null이면 목록 표시)
+    currentUser: null,      // 로그인이 완료되면 실제 유저 정보가 여기에 담깁니다.
+    keywords: [],           
+    questions: [],          
+    selectedKeyword: '전체', 
+    searchQuery: '',        
+    activeQuestionId: null  
 };
 
-let db; // Firestore 데이터베이스 인스턴스를 담을 변수
+let db;   // Firestore 인스턴스
+let auth; // Auth 인스턴스
+let unsubscribeKeywords = null;
+let unsubscribeQuestions = null;
 
 // ==========================================================================
-// 4. 유틸리티 함수 (시간 변환 및 텍스트 보안)
+// 4. 유틸리티 함수
 // ==========================================================================
 function timeAgo(dateString) {
     const now = new Date();
@@ -67,72 +74,132 @@ function escapeHtml(unsafeText) {
 }
 
 // ==========================================================================
-// 5. Firebase 데이터 동기화 함수 (실시간 구독)
+// 5. Firebase 인증(로그인) 기능
 // ==========================================================================
-function initFirebase() {
-    // 사용자가 API 키를 입력하지 않았다면 경고창 띄우기
-    if (firebaseConfig.apiKey === "여기에_입력하세요") {
-        alert("🚨 코드 상단(app.js 14번째 줄)에 Firebase 설정 키를 먼저 입력해 주세요!");
-        return;
-    }
+function initFirebaseApp() {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
 
-    try {
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        
-        // 데이터 실시간 구독 시작
-        subscribeToKeywords();
-        subscribeToQuestions();
-    } catch (error) {
-        console.error("Firebase 초기화 에러:", error);
-        alert("Firebase 연동 중 문제가 발생했습니다. 키 정보를 확인해 주세요.");
-    }
-}
+    // [중요] 사용자의 로그인 상태를 실시간으로 감시하는 센서입니다.
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // 로그인 된 상태 (메인 화면 보여주기)
+            document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('main-app-wrapper').classList.remove('hidden');
 
-// 키워드 목록 실시간 가져오기
-function subscribeToKeywords() {
-    const keywordsRef = doc(db, 'settings', 'keywordsDoc');
-    
-    onSnapshot(keywordsRef, (docSnap) => {
-        if (docSnap.exists()) {
-            state.keywords = docSnap.data().list || [];
+            // 유저 정보 저장 (구글 이름이 없으면 이메일 앞부분을 닉네임으로 사용)
+            let userName = user.displayName || user.email.split('@')[0];
+            state.currentUser = {
+                id: user.uid,
+                name: userName,
+                email: user.email
+            };
+            
+            // 헤더와 답변창에 로그인한 이름 표시
+            document.getElementById('header-user-name').textContent = userName;
+            document.getElementById('comment-author-name').textContent = userName;
+
+            // 데이터 동기화 시작
+            startDatabaseSync();
         } else {
-            // 처음이라 문서가 없다면 기본 키워드를 생성해 줍니다
-            state.keywords = ['수학', '과학', '영어', '국어', '기타'];
-            setDoc(keywordsRef, { list: state.keywords });
+            // 로그인 안 된 상태 (로그인 화면 보여주기)
+            state.currentUser = null;
+            document.getElementById('login-overlay').classList.remove('hidden');
+            document.getElementById('main-app-wrapper').classList.add('hidden');
+            
+            // 구독 해제 (다른 유저가 로그인 전이면 데이터 연결 차단)
+            if (unsubscribeKeywords) unsubscribeKeywords();
+            if (unsubscribeQuestions) unsubscribeQuestions();
         }
-        renderKeywords(); // 데이터가 바뀔 때마다 화면 자동 갱신
-    }, (error) => {
-        console.error("키워드 로드 실패:", error);
     });
 }
 
-// 질문 목록 실시간 가져오기
-function subscribeToQuestions() {
+// 5-1. 이메일 로그인
+async function handleEmailSignIn() {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value.trim();
+    if (!email || !password) return alert("이메일과 비밀번호를 입력해주세요.");
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // 성공하면 onAuthStateChanged 가 자동으로 다음 화면으로 넘겨줍니다!
+    } catch (error) {
+        console.error(error);
+        alert("로그인 실패: 아이디와 비밀번호를 확인해주세요.");
+    }
+}
+
+// 5-2. 이메일 회원가입
+async function handleEmailSignUp() {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value.trim();
+    if (!email || !password) return alert("가입할 이메일과 비밀번호를 입력해주세요.");
+    if (password.length < 6) return alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("회원가입이 완료되었습니다! 환영합니다.");
+    } catch (error) {
+        console.error(error);
+        if (error.code === 'auth/email-already-in-use') alert("이미 가입된 이메일입니다.");
+        else alert("회원가입 실패: " + error.message);
+    }
+}
+
+// 5-3. 구글 로그인
+async function handleGoogleSignIn() {
+    const provider = new GoogleAuthProvider();
+    try {
+        await signInWithPopup(auth, provider);
+    } catch (error) {
+        console.error(error);
+        alert("구글 로그인 중 에러가 발생했습니다.");
+    }
+}
+
+// 5-4. 로그아웃
+function handleSignOut() {
+    if(confirm("정말 로그아웃 하시겠습니까?")) {
+        signOut(auth);
+    }
+}
+
+// ==========================================================================
+// 6. Firestore 데이터 실시간 동기화
+// ==========================================================================
+function startDatabaseSync() {
+    // 키워드 동기화
+    const keywordsRef = doc(db, 'settings', 'keywordsDoc');
+    unsubscribeKeywords = onSnapshot(keywordsRef, (docSnap) => {
+        if (docSnap.exists()) {
+            state.keywords = docSnap.data().list || [];
+        } else {
+            state.keywords = ['수학', '과학', '영어', '국어', '기타'];
+            setDoc(keywordsRef, { list: state.keywords });
+        }
+        renderKeywords();
+    });
+
+    // 질문 동기화
     const questionsCollection = collection(db, 'questions');
-    
-    // onSnapshot은 누군가 글을 쓰면 새로고침 없이 즉시 반응(실시간)하게 해줍니다.
-    onSnapshot(questionsCollection, (snapshot) => {
+    unsubscribeQuestions = onSnapshot(questionsCollection, (snapshot) => {
         const loadedQuestions = [];
         snapshot.forEach((docSnap) => {
             loadedQuestions.push({ id: docSnap.id, ...docSnap.data() });
         });
         state.questions = loadedQuestions;
-        
-        renderMainArea(); // 피드 또는 상세 스레드 자동 갱신
-        renderKeywords(); // 키워드별 개수 뱃지도 갱신되어야 함
-    }, (error) => {
-        console.error("질문 목록 로드 실패:", error);
+        renderMainArea();
+        renderKeywords(); 
     });
 }
 
 // ==========================================================================
-// 6. UI 렌더링 함수 (기존 로컬 방식과 동일)
+// 7. UI 렌더링 함수
 // ==========================================================================
 function renderKeywords() {
     const listEl = document.getElementById('keywords-list');
     const selectEl = document.getElementById('question-keyword-select');
-    
     if(!listEl) return;
 
     let html = `<li class="${state.selectedKeyword === '전체' ? 'active' : ''}">
@@ -184,7 +251,6 @@ function renderQuestionsFeed() {
     const filterTitle = document.getElementById('current-filter-title');
 
     let filtered = state.questions;
-
     if (state.selectedKeyword !== '전체') {
         filtered = filtered.filter(q => q.keyword === state.selectedKeyword);
         filterTitle.textContent = `'${state.selectedKeyword}' 질문 목록`;
@@ -282,14 +348,13 @@ function renderThreadDetail() {
 }
 
 // ==========================================================================
-// 7. 사용자 액션 (Firebase 쓰기 작업)
+// 8. 사용자 액션 (Firebase 쓰기 작업)
 // ==========================================================================
 window.selectKeyword = function(keyword) {
     state.selectedKeyword = keyword;
     state.searchQuery = '';
     state.activeQuestionId = null;
     document.getElementById('search-input').value = '';
-    
     renderKeywords();
     renderMainArea();
 };
@@ -305,8 +370,7 @@ function handleBackToFeed() {
 }
 
 async function handleAddKeyword() {
-    if(!db) return alert("Firebase 연결이 안되어 있습니다.");
-
+    if(!db) return;
     const input = document.getElementById('new-keyword-input');
     const value = input.value.trim();
 
@@ -316,102 +380,87 @@ async function handleAddKeyword() {
 
     try {
         const keywordsRef = doc(db, 'settings', 'keywordsDoc');
-        await updateDoc(keywordsRef, {
-            list: arrayUnion(value)
-        });
+        await updateDoc(keywordsRef, { list: arrayUnion(value) });
         input.value = '';
     } catch (e) {
-        console.error("키워드 추가 실패:", e);
+        console.error(e);
         alert("키워드 추가 중 에러가 발생했습니다.");
     }
 }
 
 async function handleAddQuestion(e) {
     e.preventDefault();
-    if(!db) return alert("Firebase 연결이 안되어 있습니다.");
+    if(!db || !state.currentUser) return alert("로그인이 필요합니다.");
 
     const titleInput = document.getElementById('question-title');
     const contentInput = document.getElementById('question-content');
     const keywordSelect = document.getElementById('question-keyword-select');
 
-    const title = titleInput.value.trim();
-    const content = contentInput.value.trim();
-    const keyword = keywordSelect.value;
-
-    if (!keyword) return alert('과목 또는 키워드를 선택해 주세요!');
+    if (!keywordSelect.value) return alert('과목 또는 키워드를 선택해 주세요!');
 
     const newQuestion = {
         userId: state.currentUser.id,
-        userName: `학생 ${state.currentUser.name}`,
-        title: title,
-        content: content,
-        keyword: keyword,
+        userName: state.currentUser.name, // [변경] 실제 로그인한 아이디 사용
+        title: titleInput.value.trim(),
+        content: contentInput.value.trim(),
+        keyword: keywordSelect.value,
         createdAt: new Date().toISOString(),
         comments: []
     };
 
     try {
-        // Firebase에 새 문서(질문) 추가
         const docRef = await addDoc(collection(db, "questions"), newQuestion);
-        
-        // 입력란 초기화 및 뷰 전환
-        titleInput.value = '';
-        contentInput.value = '';
-        keywordSelect.value = '';
-        
-        // 방금 작성한 질문 상세 뷰로 이동 (Firebase의 실시간 동기화보다 빠르게 뷰를 바꾸려면 강제 선택도 가능)
+        titleInput.value = ''; contentInput.value = ''; keywordSelect.value = '';
         selectQuestion(docRef.id);
     } catch (e) {
-        console.error("질문 등록 에러: ", e);
+        console.error(e);
         alert("질문을 등록하는 중 에러가 발생했습니다.");
     }
 }
 
 async function handleAddComment(e) {
     e.preventDefault();
-    if(!db) return alert("Firebase 연결이 안되어 있습니다.");
+    if(!db || !state.currentUser) return alert("로그인이 필요합니다.");
 
     const textarea = document.getElementById('comment-content');
     const content = textarea.value.trim();
-
     if (content === '') return alert('답변 내용을 입력해 주세요!');
-    if (!state.activeQuestionId) return alert('답변을 작성할 질문이 지정되지 않았습니다.');
+    if (!state.activeQuestionId) return;
 
     const newComment = {
-        id: 'c_' + Date.now(), // 코멘트 고유 식별자 임시 부여
+        id: 'c_' + Date.now(), 
         userId: state.currentUser.id,
-        userName: `학생 ${state.currentUser.name}`,
+        userName: state.currentUser.name, // [변경] 실제 로그인한 아이디 사용
         content: content,
         createdAt: new Date().toISOString()
     };
 
     try {
         const questionRef = doc(db, 'questions', state.activeQuestionId);
-        // 질문 문서 내부의 comments 배열에 새 답변을 추가합니다
-        await updateDoc(questionRef, {
-            comments: arrayUnion(newComment)
-        });
-        
+        await updateDoc(questionRef, { comments: arrayUnion(newComment) });
         textarea.value = '';
-        // 화면은 onSnapshot 덕분에 자동으로 갱신됩니다!
     } catch(e) {
-        console.error("답변 등록 에러: ", e);
+        console.error(e);
         alert("답변을 등록하는 중 에러가 발생했습니다.");
     }
 }
 
 // ==========================================================================
-// 8. 브라우저 로딩 완료 시 초기 실행
+// 9. 브라우저 로딩 완료 시 이벤트 바인딩
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // 이벤트 리스너 연결
+    // 9-1. 로그인 관련 버튼 이벤트
+    document.getElementById('btn-login-email').addEventListener('click', handleEmailSignIn);
+    document.getElementById('btn-signup-email').addEventListener('click', handleEmailSignUp);
+    document.getElementById('btn-login-google').addEventListener('click', handleGoogleSignIn);
+    document.getElementById('btn-logout').addEventListener('click', handleSignOut);
+
+    // 9-2. 기존 앱 기능 버튼 이벤트
     document.getElementById('add-keyword-btn').addEventListener('click', handleAddKeyword);
     document.getElementById('new-keyword-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleAddKeyword();
     });
-
     document.getElementById('question-form').addEventListener('submit', handleAddQuestion);
-    
     document.getElementById('search-input').addEventListener('input', (e) => {
         state.searchQuery = e.target.value;
         if(state.activeQuestionId !== null) {
@@ -421,10 +470,9 @@ document.addEventListener('DOMContentLoaded', () => {
             renderQuestionsFeed();
         }
     });
-
     document.getElementById('back-to-feed-btn').addEventListener('click', handleBackToFeed);
     document.getElementById('comment-form').addEventListener('submit', handleAddComment);
 
-    // [중요] Firebase 연동 함수 실행
-    initFirebase();
+    // [중요] Firebase 연동 및 상태 감시 시작
+    initFirebaseApp();
 });
